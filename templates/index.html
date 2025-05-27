@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keylogger Detection Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-shield-alt me-2"></i>
+                Keylogger Detection Tool
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/dashboard">
+                    <i class="fas fa-tachometer-alt me-1"></i>
+                    Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 text-center">
+                    <i class="fas fa-shield-alt hero-icon"></i>
+                    <h1 class="display-4 fw-bold mb-4">Advanced Keylogger Detection</h1>
+                    <p class="lead mb-4">
+                        Protect your system from keylogger attacks with real-time behavioral analysis 
+                        and intelligent threat detection.
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="/dashboard" class="btn btn-primary btn-lg me-3">
+                            <i class="fas fa-play me-2"></i>
+                            Start Monitoring
+                        </a>
+                        <button class="btn btn-outline-light btn-lg" onclick="learnMore()">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Learn More
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-5">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card feature-card h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h5 class="card-title">Real-time Monitoring</h5>
+                        <p class="card-text">
+                            Continuous monitoring of system processes, network connections, 
+                            and keyboard behavior patterns to detect threats as they occur.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card feature-card h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h5 class="card-title">Behavioral Analysis</h5>
+                        <p class="card-text">
+                            Advanced algorithms analyze typing patterns, application behavior, 
+                            and system interactions to identify suspicious activities.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card feature-card h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <h5 class="card-title">Instant Alerts</h5>
+                        <p class="card-text">
+                            Immediate notifications when potential keylogger activity is detected, 
+                            with detailed analysis and recommended actions.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-lg-6">
+                <div class="card info-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                            About Keylogger Threats
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Keyloggers are malicious programs that record keystrokes to steal sensitive information like:</p>
+                        <ul>
+                            <li>Passwords and login credentials</li>
+                            <li>Credit card numbers and banking information</li>
+                            <li>Personal messages and documents</li>
+                            <li>Social security numbers and other sensitive data</li>
+                        </ul>
+                        <p>Our detection tool uses advanced behavioral analysis to identify these threats before they can compromise your data.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card info-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-cogs text-primary me-2"></i>
+                            How It Works
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="detection-steps">
+                            <div class="step">
+                                <div class="step-number">1</div>
+                                <div>Monitor system processes and network activity</div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">2</div>
+                                <div>Analyze keyboard input patterns and timing</div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">3</div>
+                                <div>Compare against known threat signatures</div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">4</div>
+                                <div>Alert user to suspicious activities</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card quick-status-card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 class="mb-2">System Status</h5>
+                                <p class="mb-0 text-muted">Real-time security monitoring status</p>
+                            </div>
+                            <div class="col-md-4 text-md-end">
+                                <div id="system-status" class="status-indicator">
+                                    <span class="status-dot status-loading"></span>
+                                    <span class="status-text">Checking...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Keylogger Detection Tool</h6>
+                    <p class="small mb-0">Advanced security monitoring and threat detection system.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="small">
+                        <i class="fas fa-shield-alt text-primary me-1"></i>
+                        Your security is our priority
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/monitor.js') }}"></script>
+    <script>
+        function learnMore() {
+            document.querySelector('.container.py-5').scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+        }
+
+        // Initialize status checking
+        document.addEventListener('DOMContentLoaded', function() {
+            checkSystemStatus();
+            setInterval(checkSystemStatus, 10000); // Check every 10 seconds
+        });
+
+        function checkSystemStatus() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    const statusElement = document.getElementById('system-status');
+                    if (data.status === 'active') {
+                        statusElement.innerHTML = `
+                            <span class="status-dot status-active"></span>
+                            <span class="status-text">System Protected</span>
+                        `;
+                    } else {
+                        statusElement.innerHTML = `
+                            <span class="status-dot status-inactive"></span>
+                            <span class="status-text">System Vulnerable</span>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking status:', error);
+                    const statusElement = document.getElementById('system-status');
+                    statusElement.innerHTML = `
+                        <span class="status-dot status-error"></span>
+                        <span class="status-text">Status Unknown</span>
+                    `;
+                });
+        }
+    </script>
+</body>
+</html>

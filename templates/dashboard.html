@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Dashboard - Keylogger Detection Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-shield-alt me-2"></i>
+                Keylogger Detection Tool
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">
+                    <i class="fas fa-home me-1"></i>
+                    Home
+                </a>
+                <a class="nav-link active" href="/dashboard">
+                    <i class="fas fa-tachometer-alt me-1"></i>
+                    Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <!-- Status Bar -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card dashboard-header">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <h4 class="mb-1">Security Dashboard</h4>
+                                <p class="text-muted mb-0">Real-time threat monitoring and analysis</p>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <div class="dashboard-status">
+                                    <div id="monitoring-status" class="status-indicator">
+                                        <span class="status-dot status-loading"></span>
+                                        <span class="status-text">Initializing...</span>
+                                    </div>
+                                    <button class="btn btn-outline-primary btn-sm ms-3" onclick="triggerScan()">
+                                        <i class="fas fa-search me-1"></i>
+                                        Scan Now
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Statistics -->
+        <div class="row g-3 mb-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-primary">
+                                <i class="fas fa-microchip"></i>
+                            </div>
+                            <div class="ms-3">
+                                <div class="stat-label">CPU Usage</div>
+                                <div class="stat-value" id="cpu-usage">--%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-info">
+                                <i class="fas fa-memory"></i>
+                            </div>
+                            <div class="ms-3">
+                                <div class="stat-label">Memory Usage</div>
+                                <div class="stat-value" id="memory-usage">--%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="ms-3">
+                                <div class="stat-label">Active Alerts</div>
+                                <div class="stat-value" id="alert-count">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-success">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                            <div class="ms-3">
+                                <div class="stat-label">Processes</div>
+                                <div class="stat-value" id="process-count">--</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Alerts Panel -->
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bell text-warning me-2"></i>
+                            Security Alerts
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="alerts-container" class="alerts-scroll">
+                            <div class="alert-placeholder">
+                                <i class="fas fa-shield-alt text-success"></i>
+                                <p>No security alerts at this time. System monitoring is active.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Activity Chart -->
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-line text-primary me-2"></i>
+                            System Activity
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="activityChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-1">
+            <!-- Suspicious Processes -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-exclamation-circle text-danger me-2"></i>
+                            Suspicious Processes
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="suspicious-processes">
+                            <div class="process-placeholder">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <p>No suspicious processes detected.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Keyboard Analysis -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-keyboard text-info me-2"></i>
+                            Keyboard Analysis
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="keyboard-analysis">
+                            <div class="analysis-item">
+                                <div class="analysis-label">Input Rate</div>
+                                <div class="analysis-value" id="input-rate">-- events/sec</div>
+                            </div>
+                            <div class="analysis-item">
+                                <div class="analysis-label">Active Apps</div>
+                                <div class="analysis-value" id="active-apps">--</div>
+                            </div>
+                            <div class="analysis-item">
+                                <div class="analysis-label">Pattern Status</div>
+                                <div class="analysis-value text-success" id="pattern-status">Normal</div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Behavioral analysis helps detect automated or malicious input
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Process Details Modal -->
+    <div class="modal fade" id="processModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Process Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="processModalBody">
+                    <!-- Process details will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/detector.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/monitor.js') }}"></script>
+    <script>
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+        });
+
+        let activityChart;
+
+        function initializeDashboard() {
+            // Initialize activity chart
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            activityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'CPU Usage',
+                        data: [],
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Memory Usage',
+                        data: [],
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+
+            // Start monitoring
+            startMonitoring();
+            
+            // Initialize keyboard detection
+            initKeyboardDetection();
+        }
+
+        function startMonitoring() {
+            updateDashboard();
+            setInterval(updateDashboard, 5000); // Update every 5 seconds
+        }
+
+        function updateDashboard() {
+            // Update system stats
+            fetch('/api/system-stats')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('cpu-usage').textContent = `${data.cpu_percent?.toFixed(1) || '--'}%`;
+                    document.getElementById('memory-usage').textContent = `${data.memory_percent?.toFixed(1) || '--'}%`;
+                    document.getElementById('process-count').textContent = data.running_processes || '--';
+                    
+                    // Update chart
+                    updateChart(data);
+                })
+                .catch(error => console.error('Error fetching system stats:', error));
+
+            // Update alerts
+            fetch('/api/alerts')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('alert-count').textContent = data.length;
+                    updateAlertsDisplay(data);
+                })
+                .catch(error => console.error('Error fetching alerts:', error));
+
+            // Update suspicious processes
+            fetch('/api/suspicious-processes')
+                .then(response => response.json())
+                .then(data => {
+                    updateSuspiciousProcesses(data);
+                })
+                .catch(error => console.error('Error fetching suspicious processes:', error));
+
+            // Update keyboard patterns
+            fetch('/api/keyboard-patterns')
+                .then(response => response.json())
+                .then(data => {
+                    updateKeyboardAnalysis(data);
+                })
+                .catch(error => console.error('Error fetching keyboard patterns:', error));
+
+            // Update monitoring status
+            updateMonitoringStatus();
+        }
+
+        function updateChart(data) {
+            const now = new Date().toLocaleTimeString();
+            
+            // Add new data point
+            activityChart.data.labels.push(now);
+            activityChart.data.datasets[0].data.push(data.cpu_percent || 0);
+            activityChart.data.datasets[1].data.push(data.memory_percent || 0);
+            
+            // Keep only last 10 data points
+            if (activityChart.data.labels.length > 10) {
+                activityChart.data.labels.shift();
+                activityChart.data.datasets[0].data.shift();
+                activityChart.data.datasets[1].data.shift();
+            }
+            
+            activityChart.update('none');
+        }
+
+        function updateAlertsDisplay(alerts) {
+            const container = document.getElementById('alerts-container');
+            
+            if (alerts.length === 0) {
+                container.innerHTML = `
+                    <div class="alert-placeholder">
+                        <i class="fas fa-shield-alt text-success"></i>
+                        <p>No security alerts at this time. System monitoring is active.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = alerts.slice(-10).reverse().map(alert => `
+                <div class="alert alert-${getSeverityClass(alert.severity)} alert-dismissible fade show mb-2">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-${getAlertIcon(alert.type)} me-2 mt-1"></i>
+                        <div class="flex-grow-1">
+                            <strong>${alert.type.replace('_', ' ').toUpperCase()}</strong>
+                            <div>${alert.message}</div>
+                            <small class="text-muted">${new Date(alert.timestamp).toLocaleString()}</small>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateSuspiciousProcesses(processes) {
+            const container = document.getElementById('suspicious-processes');
+            
+            if (processes.length === 0) {
+                container.innerHTML = `
+                    <div class="process-placeholder">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <p>No suspicious processes detected.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = processes.map(process => `
+                <div class="suspicious-process-item mb-3 p-3 border rounded" onclick="showProcessDetails(${process.pid})">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">${process.name}</h6>
+                            <small class="text-muted">PID: ${process.pid} | Risk: ${process.risk_level}</small>
+                            <div class="mt-1">
+                                ${process.reasons.slice(0, 2).map(reason => 
+                                    `<span class="badge bg-warning text-dark me-1">${reason}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                        <div class="risk-indicator">
+                            <span class="badge bg-${process.risk_level === 'high' ? 'danger' : process.risk_level === 'medium' ? 'warning' : 'info'}">
+                                ${process.risk_level.toUpperCase()}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateKeyboardAnalysis(patterns) {
+            if (patterns.length === 0) return;
+
+            patterns.forEach(pattern => {
+                if (pattern.type === 'activity_rate') {
+                    document.getElementById('input-rate').textContent = `${pattern.value.toFixed(2)} events/sec`;
+                } else if (pattern.type === 'app_diversity') {
+                    document.getElementById('active-apps').textContent = pattern.value;
+                }
+            });
+        }
+
+        function updateMonitoringStatus() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    const statusElement = document.getElementById('monitoring-status');
+                    if (data.status === 'active') {
+                        statusElement.innerHTML = `
+                            <span class="status-dot status-active"></span>
+                            <span class="status-text">Monitoring Active</span>
+                        `;
+                    } else {
+                        statusElement.innerHTML = `
+                            <span class="status-dot status-inactive"></span>
+                            <span class="status-text">Monitoring Inactive</span>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking status:', error);
+                });
+        }
+
+        function triggerScan() {
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Scanning...';
+            button.disabled = true;
+
+            fetch('/api/scan-now', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Refresh dashboard data
+                        updateDashboard();
+                    } else {
+                        console.error('Scan failed:', data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error triggering scan:', error);
+                })
+                .finally(() => {
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                });
+        }
+
+        function showProcessDetails(pid) {
+            fetch(`/api/process-details/${pid}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById('processModalBody').innerHTML = `
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Error loading process details: ${data.error}
+                            </div>
+                        `;
+                    } else {
+                        document.getElementById('processModalBody').innerHTML = `
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Basic Information</h6>
+                                    <table class="table table-sm">
+                                        <tr><td><strong>Process ID:</strong></td><td>${data.pid}</td></tr>
+                                        <tr><td><strong>Name:</strong></td><td>${data.name}</td></tr>
+                                        <tr><td><strong>Status:</strong></td><td>${data.status}</td></tr>
+                                        <tr><td><strong>Created:</strong></td><td>${new Date(data.create_time).toLocaleString()}</td></tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Resource Usage</h6>
+                                    <table class="table table-sm">
+                                        <tr><td><strong>CPU:</strong></td><td>${data.cpu_percent?.toFixed(2) || 0}%</td></tr>
+                                        <tr><td><strong>Memory:</strong></td><td>${data.memory_percent?.toFixed(2) || 0}%</td></tr>
+                                        <tr><td><strong>Connections:</strong></td><td>${data.connections || 0}</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <h6>Executable Path</h6>
+                                    <code>${data.exe}</code>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <h6>Command Line</h6>
+                                    <code>${data.cmdline}</code>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    new bootstrap.Modal(document.getElementById('processModal')).show();
+                })
+                .catch(error => {
+                    console.error('Error fetching process details:', error);
+                });
+        }
+
+        function getSeverityClass(severity) {
+            switch(severity) {
+                case 'high': return 'danger';
+                case 'medium': return 'warning';
+                case 'low': return 'info';
+                default: return 'secondary';
+            }
+        }
+
+        function getAlertIcon(type) {
+            switch(type) {
+                case 'process': return 'exclamation-triangle';
+                case 'keyboard': return 'keyboard';
+                case 'network': return 'wifi';
+                case 'manual_scan': return 'search';
+                default: return 'bell';
+            }
+        }
+    </script>
+</body>
+</html>
